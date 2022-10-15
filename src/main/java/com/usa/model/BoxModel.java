@@ -26,7 +26,7 @@ public class BoxModel {
 
     @ManyToOne
     @JoinColumn(name = "idCategory")
-    @JsonIgnoreProperties("box")
+    @JsonIgnoreProperties("boxes")
     private CategoryModel category;
 
     @OneToMany(cascade = {CascadeType.PERSIST}, mappedBy = "box")
