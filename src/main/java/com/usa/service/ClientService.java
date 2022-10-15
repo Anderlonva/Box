@@ -1,5 +1,6 @@
 package com.usa.service;
 
+import com.usa.model.BoxModel;
 import com.usa.model.ClientModel;
 import com.usa.repository.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +24,49 @@ public class ClientService {
     }
 
     public ClientModel saveClient(ClientModel clientModel){
-        return clientRepository.saveClient(clientModel);
+        if (clientModel.getIdClient() == null){
+            return  clientRepository.saveClient(clientModel);
+        }else {
+            Optional<ClientModel> optional= clientRepository.getClient(clientModel.getIdClient());
+            if (optional.isEmpty()){
+                return clientRepository.saveClient(clientModel);
+            }else {
+                return clientModel;
+            }
+        }
     }
 
     public boolean deleteClient(Integer id){
-        clientRepository.deleteClient(id);
-        return true;
+        Boolean aBoolean = getClient(id).map(c -> {
+            clientRepository.deleteClient(c.getIdClient());
+            return true;
+        }).orElse(false);
+        return aBoolean;
     }
 
     public ClientModel updateClient(ClientModel clientModel){
-        return clientRepository.updateClient(clientModel);
+        if (clientModel.getIdClient() != null) {
+            Optional<ClientModel> optional = clientRepository.getClient(clientModel.getIdClient());
+            if (!optional.isEmpty()){
+                if (clientModel.getEmail() != null) {
+                    optional.get().setEmail(clientModel.getEmail());
+                }
+                if (clientModel.getPassword() != null) {
+                    optional.get().setPassword(clientModel.getPassword());
+                }
+                if (clientModel.getName() != null) {
+                    optional.get().setName(clientModel.getName());
+                }
+                if (clientModel.getAge() != null) {
+                    optional.get().setAge(clientModel.getAge());
+                }
+                clientRepository.saveClient(optional.get());
+                return optional.get();
+            }else {
+                return clientModel;
+            }
+        }else {
+            return clientModel;
+        }
     }
 }

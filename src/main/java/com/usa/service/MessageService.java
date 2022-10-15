@@ -1,5 +1,6 @@
 package com.usa.service;
 
+import com.usa.model.BoxModel;
 import com.usa.model.MessageModel;
 import com.usa.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +24,42 @@ public class MessageService {
     }
 
     public MessageModel saveMessage(MessageModel messageModel){
-        return messageRepository.saveMessage(messageModel);
+        if (messageModel.getIdMessage() == null){
+            return  messageRepository.saveMessage(messageModel);
+        }else {
+            Optional<MessageModel> optional= messageRepository.getMessage(messageModel.getIdMessage());
+            if (optional.isEmpty()){
+                return messageRepository.saveMessage(messageModel);
+            }else {
+                return messageModel;
+            }
+        }
     }
 
     public boolean deleteMessage(Integer id){
-        messageRepository.deleteMessage(id);
-        return true;
+        Boolean aBoolean = getMessage(id).map(m -> {
+            messageRepository.deleteMessage(m.getIdMessage());
+            return true;
+        }).orElse(false);
+        return aBoolean;
     }
 
     public MessageModel updateMessage(MessageModel messageModel){
-        return messageRepository.updateMessage(messageModel);
+        if (messageModel.getIdMessage() != null) {
+            Optional<MessageModel> optional = messageRepository.getMessage(messageModel.getIdMessage());
+            if (!optional.isEmpty()){
+                if (messageModel.getMessageText() != null) {
+                    optional.get().setMessageText(messageModel.getMessageText());
+                    optional.get().setClient(messageModel.getClient());
+                    optional.get().setBox(messageModel.getBox());
+                }
+                messageRepository.saveMessage(optional.get());
+                return optional.get();
+            }else {
+                return messageModel;
+            }
+        }else {
+            return messageModel;
+        }
     }
 }

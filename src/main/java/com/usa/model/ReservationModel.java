@@ -1,6 +1,7 @@
 package com.usa.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,17 +21,19 @@ public class ReservationModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Integer idReservation;
 
-    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
-    @Column(name = "start_date")
-    private String starDate;
+    private Date startDate;
+    private Date devolutionDate;
+    private String status="created";
 
-    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
-    @Column(name = "devolution_date")
-    private String devolutionDate;
+    @ManyToOne
+    @JoinColumn(name = "id")
+    @JsonIgnoreProperties("reservations")
+    private BoxModel box;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "idClient")
+    @JsonIgnoreProperties({"reservations", "messages"})
     private ClientModel client;
 
-    @OneToMany
-    private List<BoxModel> box;
+    private String score;
 }

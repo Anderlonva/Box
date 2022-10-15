@@ -1,5 +1,6 @@
 package com.usa.service;
 
+import com.usa.model.BoxModel;
 import com.usa.model.CategoryModel;
 import com.usa.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,43 @@ public class CategoryService {
     }
 
     public CategoryModel saveCategory(CategoryModel categoryModel) {
-        return categoryRepository.saveCategory(categoryModel);
+        if (categoryModel.getId() == null){
+            return  categoryRepository.saveCategory(categoryModel);
+        }else {
+            Optional<CategoryModel> optional= categoryRepository.getCategory(categoryModel.getId());
+            if (optional.isEmpty()){
+                return categoryRepository.saveCategory(categoryModel);
+            }else {
+                return categoryModel;
+            }
+        }
     }
 
     public boolean deleteCategory(Integer id) {
-        categoryRepository.deleteCategory(id);
-        return true;
+        Boolean aBoolean = getCategory(id).map(c -> {
+            categoryRepository.deleteCategory(c.getId());
+            return true;
+        }).orElse(false);
+        return aBoolean;
     }
 
     public CategoryModel updateCategory(CategoryModel categoryModel) {
-        return categoryRepository.updateCategory(categoryModel);
+        if (categoryModel.getId() != null) {
+            Optional<CategoryModel> optional = categoryRepository.getCategory(categoryModel.getId());
+            if (!optional.isEmpty()){
+                if (categoryModel.getName() != null) {
+                    optional.get().setName(categoryModel.getName());
+                }
+                if (categoryModel.getDescription() != null) {
+                    optional.get().setDescription(categoryModel.getDescription());
+                }
+                categoryRepository.saveCategory(optional.get());
+                return optional.get();
+            }else {
+                return categoryModel;
+            }
+        }else {
+            return categoryModel;
+        }
     }
 }
